@@ -2,6 +2,20 @@
   {
     "diamond": 22000,
     "price": 6500,
+    "platform": "Android / iOS",
+    "server": "GB",
+    "link": "https://www.facebook.com/share/p/192ji9k92H/"
+  },
+  {
+    "diamond": 21000,
+    "price": 4500,
+    "platform": "Android",
+    "server": "GB",
+    "link": "https://www.facebook.com/share/p/192ji9k92H/"
+  },
+  {
+    "diamond": 20000,
+    "price": 4500,
     "platform": "Android",
     "server": "GB",
     "link": "https://www.facebook.com/share/p/192ji9k92H/"
