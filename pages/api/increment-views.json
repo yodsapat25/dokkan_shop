@@ -1,0 +1,23 @@
+import fs from 'fs';
+import path from 'path';
+
+export default function handler(req, res) {
+  const { diamond } = req.query;
+  if (!diamond) return res.status(400).json({ error: 'diamond is required' });
+
+  const filePath = path.join(process.cwd(), 'public', 'data', 'views.json');
+  let views = {};
+
+  try {
+    const fileData = fs.readFileSync(filePath, 'utf8');
+    views = JSON.parse(fileData);
+  } catch (err) {
+    views = {}; // ถ้าไฟล์ยังไม่มี หรืออ่านไม่ได้ ให้เริ่มใหม่
+  }
+
+  views[diamond] = (views[diamond] || 0) + 1;
+
+  fs.writeFileSync(filePath, JSON.stringify(views, null, 2));
+
+  res.status(200).json({ views: views[diamond] });
+}
