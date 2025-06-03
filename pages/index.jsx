@@ -295,7 +295,7 @@ export default function IdShop() {
                 </button>
               </a>
             )}
-            <a href="https://m.me/100018818075168" target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
+            <a href="https://www.facebook.com/kowit.goodding/" target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
               <button style={{
                 width: "100%",
                 padding: "6px",
