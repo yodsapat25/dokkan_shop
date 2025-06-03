@@ -245,8 +245,13 @@ export default function IdShop() {
             }}>
               💎 {acc.diamond.toLocaleString()} เพชร<br />💰 {acc.price.toLocaleString()}฿
             </div>
-            <div style={{ fontSize: 13, marginBottom: 4 }}>📱 {acc.system}</div>
-            <div style={{ fontSize: 13, marginBottom: 10 }}>🌐 เซิร์ฟ: {acc.server}</div>
+<div style={{ fontSize: 13, marginBottom: 4 }}>
+  📱 ระบบ: {acc.platform || "ไม่ระบุ"}
+</div>
+<div style={{ fontSize: 13, marginBottom: 10 }}>
+  🌐 เซิร์ฟ: {acc.server || "ไม่ระบุ"}
+</div>
+
 
             <img
               src={`/images/${acc.server.toLowerCase()}/${acc.diamond}/preview.jpg`}
