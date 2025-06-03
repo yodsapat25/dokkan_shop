@@ -1,0 +1,12 @@
+body {
+  background-image: url('/images/bg_main.jpg');
+  background-size: cover;
+  background-position: center;
+  margin: 0;
+  font-family: 'Prompt', Arial, sans-serif;
+  background-attachment: fixed;
+}
+
+* {
+  box-sizing: border-box;
+}
