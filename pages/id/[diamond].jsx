@@ -73,7 +73,7 @@ export default function IdDetail() {
       <h2 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: 12 }}>
         💎 {account.diamond.toLocaleString()} เพชร / 💰 {account.price.toLocaleString()}฿
       </h2>
-      <p style={{ marginBottom: 8 }}>📱 ระบบ: {account.system}</p>
+      <p style={{ fontSize: 13, marginBottom: 4 }}>📱 ระบบ: {account.platform}</p>
       <p style={{ marginBottom: 8 }}>🌐 เซิร์ฟ: {account.server}</p>
 
       {viewCount !== null && (
@@ -129,7 +129,7 @@ export default function IdDetail() {
         </a>
       )}
 
-      <a href={chatUrl} target="_blank" rel="noopener noreferrer">
+      <a href="https://www.facebook.com/kowit.goodding/" target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
         <button style={{
           padding: "10px 16px",
           backgroundColor: "#e63946",
