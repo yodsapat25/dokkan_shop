@@ -81,14 +81,13 @@ export default function IdDetail() {
           👁️ เข้าชมแล้ว {viewCount.toLocaleString()} ครั้ง
         </p>
       )}
-
-      <div style={{
-        marginBottom: 16,
-        padding: "12px 16px",
-        backgroundColor: "rgba(255,255,255,0.08)",
-        borderRadius: 10,
-        lineHeight: 1.8
-      }}>
+        <div style={{
+          marginBottom: 16,
+          padding: "12px 16px",
+          backgroundColor: "rgba(255,255,255,0.08)",
+          borderRadius: 10,
+          lineHeight: 1.8
+        }}>
         <p><strong>🔥 สุดยอดไอดีพรีเมียมสำหรับคนพร้อมลุย!! 🔥</strong></p>
         <ul style={{ paddingLeft: 20, margin: 0 }}>
           <li>💎 เพชรสะสม {account.diamond.toLocaleString()} เม็ด (ยังไม่ใช้)</li>
@@ -99,14 +98,15 @@ export default function IdDetail() {
           <li>🎁 เหมาะสำหรับผู้เล่นใหม่ หรือสายเติมที่อยากเริ่มแบบเทพ</li>
         </ul>
       </div>
+      
 
       <p style={{ marginBottom: 16, fontStyle: 'italic', color: '#aaa' }}>
         📸 ไอดีนี้มีรูปทั้งหมด {images.length} ภาพ
       </p>
 
       <div style={{ display: "flex", overflowX: "auto", gap: 10, paddingBottom: 20 }}>
-        {images.map((img, idx) => (
-          <img key={idx} src={img} alt={`img${idx}`} style={{
+           {Array.isArray(images) && images.map((img, idx) => (
+           <img key={idx} src={img} alt={`img${idx}`} style={{
             height: 400, borderRadius: 12, border: "2px solid #fff"
           }} />
         ))}
@@ -128,8 +128,7 @@ export default function IdDetail() {
           </button>
         </a>
       )}
-
-      <a href="https://www.facebook.com/kowit.goodding/" target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
+      <a href="https://www.facebook.com/kowit.goodding/" target="_blank" rel="noopener noreferrer">
         <button style={{
           padding: "10px 16px",
           backgroundColor: "#e63946",
