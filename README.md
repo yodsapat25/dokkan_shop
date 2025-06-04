@@ -1,1 +1,1 @@
-# dokkan_shop
+# dokkan-shop
