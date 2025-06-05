@@ -176,6 +176,16 @@ export default function IdShop() {
               textDecoration: "none",
               fontSize: "14px"
             }}>กลุ่มซื้อขาย #3</a>
+          <a href="https://www.facebook.com/profile.php?id=100089456014248" target="_blank" rel="noopener noreferrer"
+            style={{
+              padding: "6px 14px",
+              backgroundColor: "#2e7d32",
+              color: "#fff",
+              fontWeight: "bold",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontSize: "14px"
+            }}>กลุ่มซื้อขายเพจ #4</a>
           <a href="https://www.facebook.com/groups/267533331383841/permalink/950188633118304"
             target="_blank"
             rel="noopener noreferrer"
