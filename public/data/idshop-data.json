@@ -7,6 +7,13 @@
     "link": "https://www.facebook.com/groups/267533331383841/permalink/1093115002158999/"
   },
   {
+    "diamond": 25000,
+    "price": 9500,
+    "platform": "Android/farmed",
+    "server": "GB",
+    "link": "https://www.facebook.com/share/p/1DiK1x74E3/"
+  },
+  {
     "diamond": 22000,
     "price": 6500,
     "platform": "Android/farmed",
@@ -223,4 +230,5 @@
     "server": "JP",
     "link": "https://www.facebook.com/share/p/1EGyw8susp/"
   }
+
 ]
