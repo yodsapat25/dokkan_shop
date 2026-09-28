@@ -1,0 +1,24 @@
+{
+  "addons": [
+    {
+      "id": "farm_f2p",
+      "label": "ฟาร์มตัวฟรี F2P (LR 11 ตัว + UR/TUR 100-130 ตัว)",
+      "price": 550
+    },
+    {
+      "id": "farm_coin",
+      "label": "ฟาร์มเหรียญครบ 112 เหรียญ/ด่าน (โดคังเฟริ์ส) — 207 ด่าน",
+      "price": 750,
+      "salePrice": 450,
+      "sale": true
+    }
+  ],
+  "payment": {
+    "promptpay": "0851992242",
+    "wallet": "0851992242",
+    "bankAccount": "0143754081",
+    "bankName": "กสิกรไทย",
+    "accountName": "ยศพัฒน์ สีทองดี"
+  },
+  "messenger": "kowit.goodding"
+}
