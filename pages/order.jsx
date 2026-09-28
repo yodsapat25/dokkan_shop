@@ -90,22 +90,33 @@ export default function Order() {
   };
 
   const buildMessage = () => {
-    const lines = ["สนใจสั่งซื้อไอดีครับ", ""];
-    lines.push(`🌐 เซิร์ฟ: ${server}`);
-    lines.push(`📱 ระบบ: ${platform}`);
-    lines.push(`💰 ราคาไอดี: ${selectedPrice?.toLocaleString()} บาท`);
-    options.addons.forEach((a) => {
-      if (addons[a.id]) {
-        lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
-      }
-    });
-    lines.push("");
-    lines.push(`📧 อีเมล: ${email}`);
-    lines.push(`🔑 พาส: ${password}`);
-    lines.push("");
-    lines.push(`✅ รวมทั้งหมด: ${total.toLocaleString()} บาท`);
-    return encodeURIComponent(lines.join("\n"));
-  };
+  const p = options.payment;
+  const lines = ["สนใจสั่งซื้อไอดีครับ", ""];
+  lines.push(`🌐 เซิร์ฟ: ${server}`);
+  lines.push(`📱 ระบบ: ${platform}`);
+  lines.push(`💰 ราคาไอดี: ${selectedPrice?.toLocaleString()} บาท`);
+  options.addons.forEach((a) => {
+    if (addons[a.id]) {
+      lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
+    }
+  });
+  lines.push("");
+  lines.push(`📧 อีเมล: ${email}`);
+  lines.push(`🔑 พาส: ${password}`);
+  lines.push("");
+  lines.push(`✅ รวมทั้งหมด: ${total.toLocaleString()} บาท`);
+  lines.push("");
+  lines.push("━━━━━━━━━━━━━━");
+  lines.push("💳 ช่องทางชำระเงิน");
+  lines.push("");
+  lines.push(`📱 พร้อมเพย์ / วอเลต: ${p.promptpay}`);
+  lines.push(`🏦 ธนาคาร: ${p.bankName}`);
+  lines.push(`🔢 เลขบัญชี: ${p.bankAccount}`);
+  lines.push(`👤 ชื่อบัญชี: ${p.accountName}`);
+  lines.push("");
+  lines.push("📸 โอนแล้วส่งสลิปกลับในแชทนี้ครับ");
+  return encodeURIComponent(lines.join("\n"));
+};
 
   const handleConfirm = () => {
     const errs = validate();
