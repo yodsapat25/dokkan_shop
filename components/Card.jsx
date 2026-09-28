@@ -12,8 +12,8 @@ export default function Card({ id, server, diamond, price, image }) {
       <div>เซิร์ฟ: {server}</div>
       <div>เพชร: {diamond}</div>
       <div>ราคา: {price} บาท</div>
-      <a href={`/buy?id=${id}`}>
-        <button style={{ marginTop: 8, width: "100%" }}>ซื้อไอดีนี้</button>
+      <a href={`/order?diamond=${diamond}&price=${price}`}>
+        <button style={{ marginTop: 8, width: "100%" }}>🛒 สั่งซื้อ</button>
       </a>
     </div>
   );
