@@ -42,6 +42,10 @@ export default function IdDetail() {
 
   if (!account) return <div style={{ padding: 20, color: '#fff' }}>กำลังโหลดข้อมูล...</div>;
 
+  // ✅ ลิงก์เพจพร้อมข้อความ auto
+  const chatText = encodeURIComponent(`สวัสดีครับ สนใจไอดี ${account.diamond} เพชรครับ ถ้าไม่ตอบทันที ผู้ให้บริการอาจหลับหรือติดธุระ โปรดรอ... ถ้าสะดวกจะติดต่อทันที`);
+  const chatUrl = `https://m.me/dokkan-idshop?ref=${chatText}`;
+
   return (
     <div style={{
       fontFamily: "'Prompt', sans-serif",
@@ -101,7 +105,7 @@ export default function IdDetail() {
       </p>
 
       <div style={{ display: "flex", overflowX: "auto", gap: 10, paddingBottom: 20 }}>
-        {Array.isArray(images) && images.map((img, idx) => (
+        {images.map((img, idx) => (
           <img key={idx} src={img} alt={`img${idx}`} style={{
             height: 400, borderRadius: 12, border: "2px solid #fff"
           }} />
@@ -125,24 +129,7 @@ export default function IdDetail() {
         </a>
       )}
 
-      {/* 🛒 ปุ่มใหม่: สั่งซื้อไอดีนี้ */}
-      <button
-        onClick={() => router.push(`/order?diamond=${account.diamond}&price=${account.price}`)}
-        style={{
-          padding: "10px 16px",
-          background: "linear-gradient(90deg,#ff9900,#ffcc00)",
-          color: "#000",
-          fontWeight: "bold",
-          borderRadius: 8,
-          border: "none",
-          cursor: "pointer",
-          marginRight: 10
-        }}
-      >
-        🛒 สั่งซื้อไอดีนี้
-      </button>
-
-      <a href="https://www.facebook.com/kowit.goodding/" target="_blank" rel="noopener noreferrer">
+      <a href="https://www.facebook.com/kowit.goodding/" target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
         <button style={{
           padding: "10px 16px",
           backgroundColor: "#e63946",

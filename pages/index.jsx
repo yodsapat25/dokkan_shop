@@ -54,7 +54,7 @@ export default function IdShop() {
       minHeight: "100vh",
       color: "#fff"
     }}>
-      {/* ข้อความต้อนรับแบบวิ่งพร้อมรูปโงกุลขี่เมฆ */}
+      {/* ข้อความต้อนรับแบบวิ่ง */}
       <div style={{
         position: "relative",
         overflow: "hidden",
@@ -204,6 +204,133 @@ export default function IdShop() {
         </div>
       </div>
 
+      {/* ⭐ ไอดีพิเศษ */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: 28,
+        }}
+      >
+        <div
+          style={{
+            width: 260,
+            background: "linear-gradient(135deg, #2a1a00, #4d3000)",
+            border: "2px solid #ffcc00",
+            borderRadius: 16,
+            padding: 16,
+            boxShadow: "0 0 30px rgba(255,204,0,0.4)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            color: "#fff",
+          }}
+        >
+          <div
+            style={{
+              background: "#ffcc00",
+              color: "#000",
+              fontWeight: "bold",
+              fontSize: 12,
+              padding: "4px 12px",
+              borderRadius: 20,
+              marginBottom: 10,
+            }}
+          >
+            ⭐ ไอดีพิเศษ
+          </div>
+
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: 17,
+              marginBottom: 4,
+              textAlign: "center",
+              color: "#ffcc00",
+            }}
+          >
+            ไอดีรอพาส 3
+          </div>
+          <div
+            style={{
+              fontSize: 13,
+              marginBottom: 10,
+              textAlign: "center",
+              opacity: 0.9,
+            }}
+          >
+            ตู้WW เวอวาย (GDC)
+          </div>
+
+          <img
+            src="/images/special/rp3-cover.JPG"
+            alt="ไอดีรอพาส 3"
+            style={{
+              width: "100%",
+              borderRadius: 10,
+              marginBottom: 10,
+              border: "1px solid rgba(255,204,0,0.3)",
+            }}
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+
+          <div style={{ fontSize: 13, marginBottom: 4 }}>
+            💎 1,500 - 9,000+ เพชร
+          </div>
+          <div style={{ fontSize: 13, marginBottom: 4 }}>
+            💰 500 - 1,350฿
+          </div>
+          <div style={{ fontSize: 13, marginBottom: 4 }}>
+            📱 ระบบ: Android/iOS
+          </div>
+          <div style={{ fontSize: 13, marginBottom: 12 }}>
+            🌐 เซิร์ฟ: GB
+          </div>
+
+          <button
+            onClick={() => { window.location.href = "/special"; }}
+            style={{
+              width: "100%",
+              padding: "10px",
+              background: "linear-gradient(90deg, #ffcc00, #ff9900)",
+              color: "#000",
+              fontWeight: "bold",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              marginBottom: 6,
+              fontSize: 14,
+            }}
+          >
+            🛒 ดูราคา / สั่งซื้อ
+          </button>
+
+          <a
+            href="https://www.facebook.com/share/p/19QPJMb8RC/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ width: "100%" }}
+          >
+            <button
+              style={{
+                width: "100%",
+                padding: "8px",
+                background: "#1877f2",
+                color: "#fff",
+                fontWeight: "bold",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+                fontSize: 13,
+              }}
+            >
+              🔗 ดูตัวอย่าง Facebook
+            </button>
+          </a>
+        </div>
+      </div>
+
+      {/* ฟิลเตอร์ */}
       <div style={{ marginBottom: 24 }}>
         {['ALL', 'JP', 'GB'].map((type) => (
           <button
@@ -226,6 +353,7 @@ export default function IdShop() {
         ))}
       </div>
 
+      {/* การ์ดไอดีปกติ */}
       <div style={{
         display: "flex",
         flexWrap: "wrap",
@@ -255,13 +383,12 @@ export default function IdShop() {
             }}>
               💎 {acc.diamond.toLocaleString()} เพชร<br />💰 {acc.price.toLocaleString()}฿
             </div>
-<div style={{ fontSize: 13, marginBottom: 4 }}>
-  📱 ระบบ: {acc.platform || "ไม่ระบุ"}
-</div>
-<div style={{ fontSize: 13, marginBottom: 10 }}>
-  🌐 เซิร์ฟ: {acc.server || "ไม่ระบุ"}
-</div>
-
+            <div style={{ fontSize: 13, marginBottom: 4 }}>
+              📱 ระบบ: {acc.platform || "ไม่ระบุ"}
+            </div>
+            <div style={{ fontSize: 13, marginBottom: 10 }}>
+              🌐 เซิร์ฟ: {acc.server || "ไม่ระบุ"}
+            </div>
 
             <img
               src={`/images/${acc.server.toLowerCase()}/${acc.diamond}/preview.jpg`}
@@ -294,6 +421,26 @@ export default function IdShop() {
               📷 ดูรูปทั้งหมด
             </button>
 
+            <button
+              onClick={() => {
+                window.location.href = `/order?diamond=${acc.diamond}&price=${acc.price}`;
+              }}
+              style={{
+                width: "100%",
+                padding: "8px",
+                background: "linear-gradient(90deg, #ff9900, #ffcc00)",
+                color: "#000",
+                fontWeight: "bold",
+                borderRadius: 6,
+                border: "none",
+                cursor: "pointer",
+                marginBottom: 6,
+                fontSize: 14
+              }}
+            >
+              🛒 สั่งซื้อ
+            </button>
+
             {acc.link && (
               <a href={acc.link} target="_blank" rel="noopener noreferrer" style={{ width: "100%", marginBottom: 6 }}>
                 <button style={{
@@ -310,7 +457,13 @@ export default function IdShop() {
                 </button>
               </a>
             )}
-            <a href="https://www.facebook.com/kowit.goodding/" target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
+
+            <a
+              href={`https://m.me/kowit.goodding?text=${encodeURIComponent(`สวัสดีครับ สนใจไอดี ${acc.diamond} เพชร ราคา ${acc.price} บาทครับ`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ width: "100%" }}
+            >
               <button style={{
                 width: "100%",
                 padding: "6px",
@@ -327,13 +480,13 @@ export default function IdShop() {
           </div>
         ))}
       </div>
-    
+
       {/* 🔻 โปรโมทเกมอื่นด้านล่างสุด */}
       <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginTop: 40 }}>
         <img src="/images/banner_new.jpg" alt="promo3" style={{ width: 220, borderRadius: 12 }} />
         <img src="/images/banner_new.jpg" alt="promo4" style={{ width: 220, borderRadius: 12 }} />
         <img src="/images/banner_new.jpg" alt="promo5" style={{ width: 220, borderRadius: 12 }} />
       </div>
-</div>
+    </div>
   );
 }
