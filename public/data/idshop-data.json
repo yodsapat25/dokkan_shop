@@ -254,42 +254,42 @@
   {
     "diamond": 18000,
     "price": 1850,
-    "platform": "Android/iOS",
+    "platform": "หมด",
     "server": "JP",
     "link": ""
   },
   {
     "diamond": 20000,
     "price": 2000,
-    "platform": "Android/iOS",
+    "platform": "หมด",
     "server": "JP",
     "link": ""
   },
   {
     "diamond": 21000,
     "price": 2200,
-    "platform": "Android/iOS",
+    "platform": "หมด",
     "server": "JP",
     "link": ""
   },
   {
     "diamond": 22000,
     "price": 2400,
-    "platform": "Android/iOS",
+    "platform": "หมด",
     "server": "JP",
     "link": ""
   },
   {
     "diamond": 23000,
     "price": 2600,
-    "platform": "Android/iOS",
+    "platform": "หมด",
     "server": "JP",
     "link": ""
   },
   {
     "diamond": 24000,
     "price": 2800,
-    "platform": "Android/iOS",
+    "platform": "หมด",
     "server": "JP",
     "link": ""
   }
