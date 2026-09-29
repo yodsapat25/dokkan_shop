@@ -281,15 +281,15 @@ export default function Special() {
         {errors.platform && <div style={errorTextStyle}>{errors.platform}</div>}
       </div>
 
-      {/* 4. ฟังก์ชันเพิ่ม */}
-      <div style={{ marginBottom: 24 }}>
-        <h3 style={{ marginBottom: 12 }}>4. ฟังก์ชันเพิ่ม (ไม่บังคับ)</h3>
-        {options.addons.map((a) => (
-          <OptionItem key={a.id} checked={!!addons[a.id]}
-            onChange={(e) => setAddons({ ...addons, [a.id]: e.target.checked })}
-            label={a.label} price={a.price} salePrice={a.salePrice} sale={a.sale} />
-        ))}
-      </div>
+      {/* 4. ฟังก์ชันเพิ่ม — ปิดการใช้งานสำหรับไอดีพิเศษ */}
+<div style={{ marginBottom: 24, opacity: 0.4, pointerEvents: "none" }}>
+  <h3 style={{ marginBottom: 12 }}>4. ฟังก์ชันเพิ่ม (ไม่บังคับ)</h3>
+  {options.addons.map((a) => (
+    <OptionItem key={a.id} checked={!!addons[a.id]}
+      onChange={() => {}}
+      label={a.label} price={a.price} salePrice={a.salePrice} sale={a.sale} />
+  ))}
+</div>
 
       {/* 5. ข้อมูลผูกไอดี */}
       <div style={{ marginBottom: 24 }}>
