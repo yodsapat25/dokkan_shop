@@ -50,9 +50,7 @@ export default function Special() {
   const lines = [`สนใจสั่งซื้อ "${special.title}" ครับ`, ""];
   lines.push(`🌐 เซิร์ฟ: ${server}`);
   lines.push(`📱 ระบบ: ${platform}`);
-  lines.push(
-    `💎 เพชร: ${selectedRange.min.toLocaleString()}-${selectedRange.max.toLocaleString()}`
-  );
+  lines.push(`💎 เพชร: ${selectedRange.min.toLocaleString()}-${selectedRange.max.toLocaleString()}`);
   lines.push(`💰 ราคาไอดี: ${selectedPrice.toLocaleString()} บาท`);
   options.addons.forEach((a) => {
     if (addons[a.id]) {
@@ -74,6 +72,12 @@ export default function Special() {
   lines.push(`👤 ชื่อบัญชี: ${p.accountName}`);
   lines.push("");
   lines.push("📸 โอนแล้วส่งสลิปกลับในแชทนี้ครับ");
+  lines.push("");
+  lines.push("━━━━━━━━━━━━━━");
+  lines.push("⏳ กรุณารอสักครู่ครับ");
+  lines.push("หากตอบช้า ผมอาจหลับอยู่ 😴");
+  lines.push("สามารถทักแชทส่วนตัวได้เลยครับ:");
+  lines.push("https://m.me/kowit.goodding");
   return encodeURIComponent(lines.join("\n"));
 };
 
