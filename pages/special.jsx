@@ -15,10 +15,36 @@ export default function Special() {
   const [addons, setAddons] = useState({});
   const [errors, setErrors] = useState({});
 
+  // ✅ useEffect ทั้งหมดอยู่บนสุด — ก่อน return
   useEffect(() => {
     fetch("/data/options.json").then((r) => r.json()).then(setOptions);
     fetch("/data/special.json").then((r) => r.json()).then(setSpecial);
   }, []);
+
+  // ✅ คำนวณ available platforms ล่วงหน้า (ก่อน return)
+  const selectedRange = special?.prices?.find((p) => p.price === selectedPrice);
+
+  const getAvailablePlatforms = (note) => {
+    if (!note) return ["Android", "iOS"];
+    const n = note.toLowerCase();
+    if (n.includes("android หมด")) return ["iOS"];
+    if (n.includes("ios หมด")) return ["Android"];
+    if (n.includes("เฉพาะ ios")) return ["iOS"];
+    if (n.includes("เฉพาะ android")) return ["Android"];
+    if (n.includes("สินค้าหมด")) return [];
+    return ["Android", "iOS"];
+  };
+
+  const availablePlatforms = selectedRange
+    ? getAvailablePlatforms(selectedRange.note)
+    : ["Android", "iOS"];
+
+  // ✅ useEffect อยู่ก่อน return — ปลอดภัย
+  useEffect(() => {
+    if (platform && !availablePlatforms.includes(platform)) {
+      setPlatform("");
+    }
+  }, [selectedPrice, platform, availablePlatforms.join(",")]);
 
   if (!options || !special) {
     return <div style={{ padding: 20, color: "#fff" }}>กำลังโหลด...</div>;
@@ -31,55 +57,55 @@ export default function Special() {
   );
   const total = (selectedPrice || 0) + addonTotal;
 
-  const selectedRange = special.prices.find((p) => p.price === selectedPrice);
+  const availableServers = (special.server || "GB").split("/");
+  const androidDisabled = !availablePlatforms.includes("Android");
+  const iosDisabled = !availablePlatforms.includes("iOS");
 
   const validate = () => {
     const errs = {};
     if (!selectedPrice) errs.price = "กรุณาเลือกช่วงเพชร";
     if (!server) errs.server = "กรุณาเลือกเซิร์ฟ";
-    if (!platform) errs.platform = "กรุณาเลือกระบบ";
+    if (availablePlatforms.length === 0) errs.platform = "สินค้าหมดทั้ง 2 ระบบ";
+    else if (!platform) errs.platform = "กรุณาเลือกระบบ";
     if (!email) errs.email = "กรุณากรอกอีเมล";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      errs.email = "รูปแบบอีเมลไม่ถูกต้อง";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "รูปแบบอีเมลไม่ถูกต้อง";
     if (!password) errs.password = "กรุณากรอกรหัสผ่าน";
     return errs;
   };
 
   const buildMessage = () => {
-  const p = options.payment;
-  const lines = [`สนใจสั่งซื้อ "${special.title}" ครับ`, ""];
-  lines.push(`🌐 เซิร์ฟ: ${server}`);
-  lines.push(`📱 ระบบ: ${platform}`);
-  lines.push(`💎 เพชร: ${selectedRange.min.toLocaleString()}-${selectedRange.max.toLocaleString()}`);
-  lines.push(`💰 ราคาไอดี: ${selectedPrice.toLocaleString()} บาท`);
-  options.addons.forEach((a) => {
-    if (addons[a.id]) {
-      lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
-    }
-  });
-  lines.push("");
-  lines.push(`📧 อีเมล: ${email}`);
-  lines.push(`🔑 พาส: ${password}`);
-  lines.push("");
-  lines.push(`✅ รวมทั้งหมด: ${total.toLocaleString()} บาท`);
-  lines.push("");
-  lines.push("━━━━━━━━━━━━━━");
-  lines.push("💳 ช่องทางชำระเงิน");
-  lines.push("");
-  lines.push(`📱 พร้อมเพย์ / วอเลต: ${p.promptpay}`);
-  lines.push(`🏦 ธนาคาร: ${p.bankName}`);
-  lines.push(`🔢 เลขบัญชี: ${p.bankAccount}`);
-  lines.push(`👤 ชื่อบัญชี: ${p.accountName}`);
-  lines.push("");
-  lines.push("📸 โอนแล้วส่งสลิปกลับในแชทนี้ครับ");
-  lines.push("");
-  lines.push("━━━━━━━━━━━━━━");
-  lines.push("⏳ กรุณารอสักครู่ครับ");
-  lines.push("หากตอบช้า ผมอาจหลับอยู่ 😴");
-  lines.push("สามารถทักแชทส่วนตัวได้เลยครับ:");
-  lines.push("https://m.me/kowit.goodding");
-  return encodeURIComponent(lines.join("\n"));
-};
+    const p = options.payment;
+    const lines = [`สนใจสั่งซื้อ "${special.title}" ครับ`, ""];
+    lines.push(`🌐 เซิร์ฟ: ${server}`);
+    lines.push(`📱 ระบบ: ${platform}`);
+    lines.push(`💎 เพชร: ${selectedRange.min.toLocaleString()}-${selectedRange.max.toLocaleString()}`);
+    lines.push(`💰 ราคาไอดี: ${selectedPrice.toLocaleString()} บาท`);
+    options.addons.forEach((a) => {
+      if (addons[a.id]) lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
+    });
+    lines.push("");
+    lines.push(`📧 อีเมล: ${email}`);
+    lines.push(`🔑 พาส: ${password}`);
+    lines.push("");
+    lines.push(`✅ รวมทั้งหมด: ${total.toLocaleString()} บาท`);
+    lines.push("");
+    lines.push("━━━━━━━━━━━━━━");
+    lines.push("💳 ช่องทางชำระเงิน");
+    lines.push("");
+    lines.push(`📱 พร้อมเพย์ / วอเลต: ${p.promptpay}`);
+    lines.push(`🏦 ธนาคาร: ${p.bankName}`);
+    lines.push(`🔢 เลขบัญชี: ${p.bankAccount}`);
+    lines.push(`👤 ชื่อบัญชี: ${p.accountName}`);
+    lines.push("");
+    lines.push("📸 โอนแล้วส่งสลิปกลับในแชทนี้ครับ");
+    lines.push("");
+    lines.push("━━━━━━━━━━━━━━");
+    lines.push("⏳ กรุณารอสักครู่ครับ");
+    lines.push("หากตอบช้า ผมอาจหลับอยู่ 😴");
+    lines.push("สามารถทักแชทส่วนตัวได้เลยครับ:");
+    lines.push("https://m.me/kowit.goodding");
+    return encodeURIComponent(lines.join("\n"));
+  };
 
   const handleConfirm = () => {
     const errs = validate();
@@ -95,144 +121,80 @@ export default function Special() {
   };
 
   const inputStyle = (hasError) => ({
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 8,
+    width: "100%", padding: "10px 12px", borderRadius: 8,
     border: hasError ? "2px solid #ff6b6b" : "2px solid rgba(255,255,255,0.15)",
-    background: "rgba(0,0,0,0.3)",
-    color: "#fff",
-    fontSize: 14,
-    outline: "none",
-    boxSizing: "border-box",
+    background: "rgba(0,0,0,0.3)", color: "#fff",
+    fontSize: 14, outline: "none", boxSizing: "border-box",
   });
 
-  const errorTextStyle = {
-    color: "#ff6b6b",
-    fontSize: 12,
-    marginTop: 4,
-    marginBottom: 8,
-  };
+  const errorTextStyle = { color: "#ff6b6b", fontSize: 12, marginTop: 4, marginBottom: 8 };
 
-  const toggleStyle = (active) => ({
+  const toggleStyle = (active, disabled) => ({
     padding: "8px 20px",
-    background: active
-      ? "linear-gradient(90deg,#ffcc00,#ff9900)"
-      : "rgba(255,255,255,0.08)",
-    border: active ? "2px solid #fff" : "2px solid rgba(255,255,255,0.15)",
+    background: disabled
+      ? "rgba(255,255,255,0.03)"
+      : active
+        ? "linear-gradient(90deg,#ffcc00,#ff9900)"
+        : "rgba(255,255,255,0.08)",
+    border: disabled
+      ? "2px solid rgba(255,255,255,0.08)"
+      : active
+        ? "2px solid #fff"
+        : "2px solid rgba(255,255,255,0.15)",
     borderRadius: 10,
-    color: active ? "#000" : "#fff",
+    color: disabled ? "#666" : active ? "#000" : "#fff",
     fontWeight: "bold",
-    cursor: "pointer",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.35 : 1,
   });
 
   return (
-    <div
-      style={{
-        fontFamily: "'Prompt', sans-serif",
-        padding: 20,
-        backgroundImage: "url('/images/space_grid.jpg')",
-        backgroundSize: "cover",
-        minHeight: "100vh",
-        color: "#fff",
-        maxWidth: 700,
-        margin: "auto",
-      }}
-    >
-      <button
-        onClick={() => router.push("/")}
-        style={{
-          marginBottom: 20,
-          padding: "10px 20px",
-          background: "linear-gradient(90deg, #4b6cb7 0%, #182848 100%)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 10,
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
-      >
-        🔙 กลับหน้าร้าน
-      </button>
+    <div style={{
+      fontFamily: "'Prompt', sans-serif", padding: 20,
+      backgroundImage: "url('/images/space_grid.jpg')",
+      backgroundSize: "cover", minHeight: "100vh",
+      color: "#fff", maxWidth: 700, margin: "auto",
+    }}>
+      <button onClick={() => router.push("/")} style={{
+        marginBottom: 20, padding: "10px 20px",
+        background: "linear-gradient(90deg, #4b6cb7 0%, #182848 100%)",
+        color: "#fff", border: "none", borderRadius: 10,
+        cursor: "pointer", fontWeight: "bold",
+      }}>🔙 กลับหน้าร้าน</button>
 
       {/* Header */}
-      <div
-        style={{
-          padding: 20,
-          background: "linear-gradient(135deg, rgba(255,204,0,0.2), rgba(255,153,0,0.1))",
-          border: "2px solid rgba(255,204,0,0.5)",
-          borderRadius: 16,
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ fontSize: 14, color: "#ffcc00", fontWeight: "bold", marginBottom: 6 }}>
-          {special.badge}
-        </div>
-        <h1 style={{ fontSize: "1.8rem", marginBottom: 6 }}>
-          ⭐ {special.title}
-        </h1>
-        <p style={{ fontSize: 15, opacity: 0.9, marginBottom: 12 }}>
-          {special.subtitle}
-        </p>
+      <div style={{
+        padding: 20,
+        background: "linear-gradient(135deg, rgba(255,204,0,0.2), rgba(255,153,0,0.1))",
+        border: "2px solid rgba(255,204,0,0.5)",
+        borderRadius: 16, marginBottom: 24,
+      }}>
+        <div style={{ fontSize: 14, color: "#ffcc00", fontWeight: "bold", marginBottom: 6 }}>{special.badge}</div>
+        <h1 style={{ fontSize: "1.8rem", marginBottom: 6 }}>⭐ {special.title}</h1>
+        <p style={{ fontSize: 15, opacity: 0.9, marginBottom: 12 }}>{special.subtitle}</p>
 
         {special.coverImage && (
-          <img
-            src={special.coverImage}
-            alt={special.title}
-            style={{
-              width: "100%",
-              borderRadius: 12,
-              marginBottom: 12,
-              border: "2px solid rgba(255,255,255,0.2)",
-            }}
-            onError={(e) => { e.target.style.display = "none"; }}
-          />
+          <img src={special.coverImage} alt={special.title}
+            style={{ width: "100%", borderRadius: 12, marginBottom: 12, border: "2px solid rgba(255,255,255,0.2)" }}
+            onError={(e) => { e.target.style.display = "none"; }} />
         )}
 
         {special.link && (
-          <a
-            href={special.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none" }}
-          >
-            <button
-              style={{
-                width: "100%",
-                padding: "10px 16px",
-                background: "#1877f2",
-                color: "#fff",
-                fontWeight: "bold",
-                borderRadius: 8,
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              🔗 ดูตัวอย่างไอดีบน Facebook
-            </button>
+          <a href={special.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+            <button style={{ width: "100%", padding: "10px 16px", background: "#1877f2", color: "#fff", fontWeight: "bold", borderRadius: 8, border: "none", cursor: "pointer" }}>🔗 ดูตัวอย่างไอดีบน Facebook</button>
           </a>
         )}
       </div>
 
       {/* Highlights */}
-      <div
-        style={{
-          padding: 16,
-          background: "rgba(255,255,255,0.08)",
-          borderRadius: 12,
-          marginBottom: 20,
-          lineHeight: 1.9,
-        }}
-      >
+      <div style={{ padding: 16, background: "rgba(255,255,255,0.08)", borderRadius: 12, marginBottom: 20, lineHeight: 1.9 }}>
         <h3 style={{ marginBottom: 10 }}>📋 รายละเอียดไอดี</h3>
         <ul style={{ paddingLeft: 20, margin: 0 }}>
-          {special.highlights.map((h, i) => (
-            <li key={i}>{h}</li>
-          ))}
+          {special.highlights.map((h, i) => (<li key={i}>{h}</li>))}
         </ul>
         {special.progress && (
           <div style={{ marginTop: 12, fontSize: 14, color: "#ffcc00" }}>
-            📊 ด่าน: {special.progress.stages}
-            <br />
+            📊 ด่าน: {special.progress.stages}<br />
             💎 เพชรเหลือ: {special.progress.diamondLeft}
           </div>
         )}
@@ -241,58 +203,25 @@ export default function Special() {
       {/* 1. เลือกช่วงเพชร */}
       <div style={{ marginBottom: 24 }} id="field-price">
         <h3 style={{ marginBottom: 12 }}>1. เลือกช่วงเพชร *</h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-            gap: 8,
-          }}
-        >
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8 }}>
           {special.prices.map((p) => {
             const isSelected = selectedPrice === p.price;
             return (
-              <button
-                key={p.price}
-                onClick={() => {
-                  setSelectedPrice(p.price);
-                  setErrors({ ...errors, price: null });
-                }}
+              <button key={p.price}
+                onClick={() => { setSelectedPrice(p.price); setErrors({ ...errors, price: null, platform: null }); }}
                 style={{
                   padding: "10px 8px",
-                  background: isSelected
-                    ? "linear-gradient(90deg,#ffcc00,#ff9900)"
-                    : "rgba(255,255,255,0.08)",
-                  border: isSelected
-                    ? "2px solid #fff"
-                    : "2px solid rgba(255,255,255,0.15)",
-                  borderRadius: 10,
-                  color: isSelected ? "#000" : "#fff",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  textAlign: "center",
-                }}
-              >
+                  background: isSelected ? "linear-gradient(90deg,#ffcc00,#ff9900)" : "rgba(255,255,255,0.08)",
+                  border: isSelected ? "2px solid #fff" : "2px solid rgba(255,255,255,0.15)",
+                  borderRadius: 10, color: isSelected ? "#000" : "#fff",
+                  fontWeight: "bold", cursor: "pointer", textAlign: "center",
+                }}>
                 {p.price.toLocaleString()}฿
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: "normal",
-                    marginTop: 2,
-                    opacity: 0.9,
-                  }}
-                >
+                <div style={{ fontSize: 11, fontWeight: "normal", marginTop: 2, opacity: 0.9 }}>
                   💎 {p.min.toLocaleString()}-{p.max.toLocaleString()}
                 </div>
                 {p.note && (
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: isSelected ? "#000" : "#ff6b6b",
-                      marginTop: 2,
-                    }}
-                  >
-                    {p.note}
-                  </div>
+                  <div style={{ fontSize: 10, color: isSelected ? "#000" : "#ff6b6b", marginTop: 2 }}>{p.note}</div>
                 )}
               </button>
             );
@@ -305,18 +234,17 @@ export default function Special() {
       <div style={{ marginBottom: 24 }} id="field-server">
         <h3 style={{ marginBottom: 12 }}>2. เลือกเซิร์ฟ *</h3>
         <div style={{ display: "flex", gap: 8 }}>
-          {["GB", "JP"].map((s) => (
-            <button
-              key={s}
-              onClick={() => {
-                setServer(s);
-                setErrors({ ...errors, server: null });
-              }}
-              style={toggleStyle(server === s)}
-            >
-              {s}
-            </button>
-          ))}
+          {["GB", "JP"].map((s) => {
+            const isDisabled = !availableServers.includes(s);
+            return (
+              <button key={s} disabled={isDisabled}
+                onClick={() => { if (isDisabled) return; setServer(s); setErrors({ ...errors, server: null }); }}
+                style={toggleStyle(server === s, isDisabled)}>
+                {s}
+                {isDisabled && (<span style={{ fontSize: 11, display: "block", marginTop: 2 }}>ไม่มี</span>)}
+              </button>
+            );
+          })}
         </div>
         {errors.server && <div style={errorTextStyle}>{errors.server}</div>}
       </div>
@@ -325,19 +253,31 @@ export default function Special() {
       <div style={{ marginBottom: 24 }} id="field-platform">
         <h3 style={{ marginBottom: 12 }}>3. เลือกระบบ *</h3>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {["Android", "iOS"].map((p) => (
-            <button
-              key={p}
-              onClick={() => {
-                setPlatform(p);
-                setErrors({ ...errors, platform: null });
-              }}
-              style={toggleStyle(platform === p)}
-            >
-              {p}
-            </button>
-          ))}
+          {["Android", "iOS"].map((p) => {
+            const isDisabled = !availablePlatforms.includes(p);
+            return (
+              <button key={p} disabled={isDisabled}
+                onClick={() => { if (isDisabled) return; setPlatform(p); setErrors({ ...errors, platform: null }); }}
+                style={toggleStyle(platform === p, isDisabled)}>
+                {p}
+                {isDisabled && (<span style={{ fontSize: 11, display: "block", marginTop: 2 }}>หมด</span>)}
+              </button>
+            );
+          })}
         </div>
+
+        {selectedPrice && availablePlatforms.length === 1 && (
+          <div style={{ marginTop: 8, padding: "8px 12px", background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.5)", borderRadius: 8, fontSize: 13, color: "#ff6b6b" }}>
+            ⚠️ ราคานี้มีแค่ {availablePlatforms[0]} เท่านั้น
+            ({availablePlatforms[0] === "iOS" ? "Android" : "iOS"} หมด)
+          </div>
+        )}
+        {selectedPrice && availablePlatforms.length === 0 && (
+          <div style={{ marginTop: 8, padding: "8px 12px", background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.5)", borderRadius: 8, fontSize: 13, color: "#ff6b6b" }}>
+            ❌ สินค้าหมดทั้ง 2 ระบบ
+          </div>
+        )}
+
         {errors.platform && <div style={errorTextStyle}>{errors.platform}</div>}
       </div>
 
@@ -345,81 +285,40 @@ export default function Special() {
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ marginBottom: 12 }}>4. ฟังก์ชันเพิ่ม (ไม่บังคับ)</h3>
         {options.addons.map((a) => (
-          <OptionItem
-            key={a.id}
-            checked={!!addons[a.id]}
+          <OptionItem key={a.id} checked={!!addons[a.id]}
             onChange={(e) => setAddons({ ...addons, [a.id]: e.target.checked })}
-            label={a.label}
-            price={a.price}
-            salePrice={a.salePrice}
-            sale={a.sale}
-          />
+            label={a.label} price={a.price} salePrice={a.salePrice} sale={a.sale} />
         ))}
       </div>
 
       {/* 5. ข้อมูลผูกไอดี */}
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ marginBottom: 12 }}>5. ข้อมูลผูกไอดี *</h3>
-        <div
-          style={{
-            padding: "12px 14px",
-            marginBottom: 12,
-            background: "rgba(255,204,0,0.12)",
-            border: "1px solid rgba(255,204,0,0.4)",
-            borderRadius: 10,
-            fontSize: 13,
-            lineHeight: 1.7,
-            color: "#ffe6a1",
-          }}
-        >
-          ⚠️ <strong>คำแนะนำสำคัญ:</strong>
-          <br />
-          กรุณาใช้อีเมล <strong>สมัครใหม่</strong> หรืออีเมลที่{" "}
-          <strong>ไม่มีไอดีเกมอื่นผูกอยู่</strong>
-          <br />
+        <div style={{ padding: "12px 14px", marginBottom: 12, background: "rgba(255,204,0,0.12)", border: "1px solid rgba(255,204,0,0.4)", borderRadius: 10, fontSize: 13, lineHeight: 1.7, color: "#ffe6a1" }}>
+          ⚠️ <strong>คำแนะนำสำคัญ:</strong><br />
+          กรุณาใช้อีเมล <strong>สมัครใหม่</strong> หรืออีเมลที่ <strong>ไม่มีไอดีเกมอื่นผูกอยู่</strong><br />
           เพราะไอดีนี้จะถูกผูกกับอีเมลนั้นทันที
         </div>
 
         <div id="field-email">
-          <input
-            type="email"
-            placeholder="อีเมล (สมัครใหม่ / ยังไม่ผูกไอดีเกม)"
+          <input type="email" placeholder="อีเมล (สมัครใหม่ / ยังไม่ผูกไอดีเกม)"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setErrors({ ...errors, email: null });
-            }}
-            style={inputStyle(!!errors.email)}
-          />
+            onChange={(e) => { setEmail(e.target.value); setErrors({ ...errors, email: null }); }}
+            style={inputStyle(!!errors.email)} />
           {errors.email && <div style={errorTextStyle}>{errors.email}</div>}
         </div>
 
         <div id="field-password">
-          <input
-            type="text"
-            placeholder="รหัสผ่าน (สำหรับผูกไอดี)"
+          <input type="text" placeholder="รหัสผ่าน (สำหรับผูกไอดี)"
             value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setErrors({ ...errors, password: null });
-            }}
-            style={inputStyle(!!errors.password)}
-          />
-          {errors.password && (
-            <div style={errorTextStyle}>{errors.password}</div>
-          )}
+            onChange={(e) => { setPassword(e.target.value); setErrors({ ...errors, password: null }); }}
+            style={inputStyle(!!errors.password)} />
+          {errors.password && <div style={errorTextStyle}>{errors.password}</div>}
         </div>
       </div>
 
       {/* สรุป */}
-      <div
-        style={{
-          padding: 16,
-          background: "rgba(0,0,0,0.4)",
-          borderRadius: 12,
-          marginBottom: 20,
-        }}
-      >
+      <div style={{ padding: 16, background: "rgba(0,0,0,0.4)", borderRadius: 12, marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span>เซิร์ฟ</span><span>{server || "-"}</span>
         </div>
@@ -428,72 +327,34 @@ export default function Special() {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span>ช่วงเพชร</span>
-          <span>
-            {selectedRange
-              ? `${selectedRange.min.toLocaleString()}-${selectedRange.max.toLocaleString()}`
-              : "-"}
-          </span>
+          <span>{selectedRange ? `${selectedRange.min.toLocaleString()}-${selectedRange.max.toLocaleString()}` : "-"}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-          <span>ราคาไอดี</span>
-          <span>{(selectedPrice || 0).toLocaleString()} ฿</span>
+          <span>ราคาไอดี</span><span>{(selectedPrice || 0).toLocaleString()} ฿</span>
         </div>
         {options.addons.map((a) =>
           addons[a.id] ? (
-            <div
-              key={a.id}
-              style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}
-            >
-              <span>{a.label}</span>
-              <span>+{getAddonPrice(a).toLocaleString()} ฿</span>
+            <div key={a.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span>{a.label}</span><span>+{getAddonPrice(a).toLocaleString()} ฿</span>
             </div>
           ) : null
         )}
         <hr style={{ borderColor: "rgba(255,255,255,0.2)", margin: "8px 0" }} />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: 20,
-            fontWeight: "bold",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: "bold" }}>
           <span>รวม</span>
           <span style={{ color: "#ffcc00" }}>{total.toLocaleString()} ฿</span>
         </div>
       </div>
 
-      <button
-        onClick={handleConfirm}
-        style={{
-          width: "100%",
-          padding: "14px",
-          background: "linear-gradient(90deg,#ff9900,#ffcc00)",
-          color: "#000",
-          fontSize: 16,
-          fontWeight: "bold",
-          border: "none",
-          borderRadius: 12,
-          cursor: "pointer",
-        }}
-      >
-        ✅ ยืนยัน → ทักแชทเพจ
-      </button>
+      <button onClick={handleConfirm} style={{
+        width: "100%", padding: "14px",
+        background: "linear-gradient(90deg,#ff9900,#ffcc00)",
+        color: "#000", fontSize: 16, fontWeight: "bold",
+        border: "none", borderRadius: 12, cursor: "pointer",
+      }}>✅ ยืนยัน → ทักแชทเพจ</button>
 
-      {/* Note */}
       {special.note && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: 12,
-            background: "rgba(255,107,107,0.1)",
-            border: "1px solid rgba(255,107,107,0.4)",
-            borderRadius: 10,
-            fontSize: 13,
-            color: "#ffb3b3",
-            lineHeight: 1.7,
-          }}
-        >
+        <div style={{ marginTop: 20, padding: 12, background: "rgba(255,107,107,0.1)", border: "1px solid rgba(255,107,107,0.4)", borderRadius: 10, fontSize: 13, color: "#ffb3b3", lineHeight: 1.7 }}>
           📝 <strong>หมายเหตุ:</strong> {special.note}
         </div>
       )}

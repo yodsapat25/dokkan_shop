@@ -4,12 +4,7 @@ import OptionItem from "../components/OptionItem";
 
 export default function Order() {
   const router = useRouter();
-  const {
-    diamond,
-    price: priceFromQuery,
-    server: serverFromQuery,
-    platform: platformFromQuery,
-  } = router.query;
+  const { diamond, price: priceFromQuery, server: serverFromQuery, platform: platformFromQuery } = router.query;
 
   const [options, setOptions] = useState(null);
   const [allAccounts, setAllAccounts] = useState([]);
@@ -28,81 +23,64 @@ export default function Order() {
   }, []);
 
   useEffect(() => {
-  fetch("/data/idshop-data.json")
-    .then((r) => r.json())
-    .then((data) => {
-      setAllAccounts(data);
-    });
-}, []);
+    fetch("/data/idshop-data.json").then((r) => r.json()).then((data) => setAllAccounts(data));
+  }, []);
 
-// ✅ กรอง priceList ตาม server + platform
-useEffect(() => {
-  if (allAccounts.length === 0) return;
-
-  let filtered = allAccounts;
-
-  // กรองตาม server
-  if (server) {
-    filtered = filtered.filter((a) => a.server === server);
-  }
-
-  // สร้าง priceList
-  const map = new Map();
-  filtered.forEach((item) => {
-    if (!map.has(item.price)) {
-      map.set(item.price, item);
-    }
-  });
-  const list = Array.from(map.values())
-    .map((item) => ({
-      price: item.price,
-      diamond: item.diamond,
-      platform: item.platform,
-      server: item.server,
-    }))
-    .sort((a, b) => a.price - b.price);
-
-  setPriceList(list);
-
-  // ✅ ถ้าราคาที่เลือกอยู่ไม่มีในลิสต์ใหม่ → reset
-  if (selectedPrice && !list.find((p) => p.price === selectedPrice)) {
-    setSelectedPrice(null);
-    setPlatform("");
-  }
-}, [allAccounts, server, selectedPrice]);
-
+  // ตั้งเซิร์ฟจาก query ก่อน
   useEffect(() => {
-    if (priceFromQuery) setSelectedPrice(Number(priceFromQuery));
-    else if (diamond) {
+    if (serverFromQuery) setServer(serverFromQuery);
+    if (platformFromQuery) setPlatform(platformFromQuery);
+  }, [serverFromQuery, platformFromQuery]);
+
+  // ✅ กรอง priceList ตาม server
+  useEffect(() => {
+    if (allAccounts.length === 0 || !server) {
+      setPriceList([]);
+      return;
+    }
+
+    const filtered = allAccounts.filter((a) => a.server === server);
+
+    const map = new Map();
+    filtered.forEach((item) => {
+      if (!map.has(item.price)) map.set(item.price, item);
+    });
+
+    const list = Array.from(map.values())
+      .map((item) => ({
+        price: item.price,
+        diamond: item.diamond,
+        platform: item.platform,
+        server: item.server,
+      }))
+      .sort((a, b) => a.price - b.price);
+
+    setPriceList(list);
+  }, [allAccounts, server]);
+
+  // ตั้งราคาจาก query (หลัง priceList พร้อม)
+  useEffect(() => {
+    if (priceFromQuery && priceList.length > 0) {
+      const found = priceList.find((p) => p.price === Number(priceFromQuery));
+      if (found) setSelectedPrice(Number(priceFromQuery));
+    } else if (diamond && priceList.length > 0) {
       const d = Number(diamond);
       const found = priceList.find((p) => Number(p.diamond) === d);
       if (found) setSelectedPrice(found.price);
     }
   }, [priceFromQuery, diamond, priceList]);
 
-  useEffect(() => {
-    if (serverFromQuery) setServer(serverFromQuery);
-    if (platformFromQuery) setPlatform(platformFromQuery);
-  }, [serverFromQuery, platformFromQuery]);
-
-  // ✅ หา account ที่เลือก → ดู platform
+  // หา account ที่เลือก
   useEffect(() => {
     if (!selectedPrice || allAccounts.length === 0) return;
-    const found = allAccounts.find((a) => a.price === selectedPrice);
+    const found = allAccounts.find(
+      (a) => a.price === selectedPrice && (!server || a.server === server)
+    );
     setSelectedAccount(found || null);
-    if (found && found.platform === "หมด") {
-      setPlatform("");
-    }
-  }, [selectedPrice, allAccounts]);
+  }, [selectedPrice, allAccounts, server]);
 
-  if (!options || priceList.length === 0) {
+  if (!options) {
     return <div style={{ padding: 20, color: "#fff" }}>กำลังโหลด...</div>;
-  }
-
-  const displayList = [...priceList];
-  if (selectedPrice && !priceList.find((p) => p.price === selectedPrice)) {
-    displayList.push({ price: selectedPrice, diamond: diamond || "-", platform: "Android/iOS" });
-    displayList.sort((a, b) => a.price - b.price);
   }
 
   const getAddonPrice = (a) => (a.sale && a.salePrice ? a.salePrice : a.price);
@@ -112,20 +90,19 @@ useEffect(() => {
   );
   const total = (selectedPrice || 0) + addonTotal;
 
-  const currentPlatform = selectedAccount?.platform || "Android/iOS";
-  const androidDisabled = currentPlatform === "iOS" || currentPlatform === "หมด";
-  const iosDisabled = currentPlatform === "Android" || currentPlatform === "หมด";
+  const currentPlatform = selectedAccount?.platform || "";
+  const androidDisabled = !currentPlatform || currentPlatform === "iOS" || currentPlatform === "หมด";
+  const iosDisabled = !currentPlatform || currentPlatform === "Android" || currentPlatform === "หมด";
   const bothDisabled = currentPlatform === "หมด";
 
   const validate = () => {
     const errs = {};
+    if (!server) errs.server = "กรุณาเลือกเซิร์ฟ";
     if (!selectedPrice) errs.price = "กรุณาเลือกราคาไอดี";
     if (bothDisabled) errs.platform = "สินค้าหมดทั้ง 2 ระบบ";
     else if (!platform) errs.platform = "กรุณาเลือกระบบ";
-    if (!server) errs.server = "กรุณาเลือกเซิร์ฟ";
     if (!email) errs.email = "กรุณากรอกอีเมล";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      errs.email = "รูปแบบอีเมลไม่ถูกต้อง";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "รูปแบบอีเมลไม่ถูกต้อง";
     if (!password) errs.password = "กรุณากรอกรหัสผ่าน";
     return errs;
   };
@@ -137,9 +114,7 @@ useEffect(() => {
     lines.push(`📱 ระบบ: ${platform}`);
     lines.push(`💰 ราคาไอดี: ${selectedPrice?.toLocaleString()} บาท`);
     options.addons.forEach((a) => {
-      if (addons[a.id]) {
-        lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
-      }
+      if (addons[a.id]) lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
     });
     lines.push("");
     lines.push(`📧 อีเมล: ${email}`);
@@ -185,9 +160,7 @@ useEffect(() => {
     fontSize: 14, outline: "none", boxSizing: "border-box",
   });
 
-  const errorTextStyle = {
-    color: "#ff6b6b", fontSize: 12, marginTop: 4, marginBottom: 8,
-  };
+  const errorTextStyle = { color: "#ff6b6b", fontSize: 12, marginTop: 4, marginBottom: 8 };
 
   const toggleStyle = (active, disabled) => ({
     padding: "8px 20px",
@@ -205,7 +178,7 @@ useEffect(() => {
     color: disabled ? "#666" : active ? "#000" : "#fff",
     fontWeight: "bold",
     cursor: disabled ? "not-allowed" : "pointer",
-    opacity: disabled ? 0.4 : 1,
+    opacity: disabled ? 0.35 : 1,
   });
 
   const priceButtonStyle = (isSelected, platform) => {
@@ -247,119 +220,92 @@ useEffect(() => {
 
       <h1 style={{ fontSize: "1.5rem", marginBottom: 20 }}>🛒 สั่งซื้อไอดี</h1>
 
-      {/* 1. เลือกราคา */}
-      <div style={{ marginBottom: 24 }} id="field-price">
-        <h3 style={{ marginBottom: 12 }}>1. เลือกราคาไอดี *</h3>
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
-          gap: 8
-        }}>
-          {displayList.map((row) => {
-            const isSelected = selectedPrice === row.price;
-            const isOut = row.platform === "หมด";
-            return (
-              <button
-                key={row.price}
-                onClick={() => {
-                  if (isOut) return;
-                  setSelectedPrice(row.price);
-                  setErrors({ ...errors, price: null, platform: null });
-                }}
-                disabled={isOut}
-                style={priceButtonStyle(isSelected, row.platform)}
-              >
-                {row.price.toLocaleString()}฿
-                <div style={{ fontSize: 11, fontWeight: "normal", marginTop: 2, opacity: 0.85 }}>
-                  💎 {typeof row.diamond === "number" ? row.diamond.toLocaleString() : row.diamond}
-                </div>
-                {row.platform === "iOS" && (
-                  <div style={{ fontSize: 10, color: isSelected ? "#000" : "#ff6b6b", marginTop: 2 }}>
-                    iOS เท่านั้น
-                  </div>
-                )}
-                {row.platform === "Android" && (
-                  <div style={{ fontSize: 10, color: isSelected ? "#000" : "#ff6b6b", marginTop: 2 }}>
-                    Android เท่านั้น
-                  </div>
-                )}
-                {isOut && (
-                  <div style={{ fontSize: 10, color: "#ff6b6b", marginTop: 2 }}>
-                    ❌ สินค้าหมด
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        {errors.price && <div style={errorTextStyle}>{errors.price}</div>}
-      </div>
-
-      {/* 2. เลือกเซิร์ฟ */}
+      {/* 1. เลือกเซิร์ฟ */}
       <div style={{ marginBottom: 24 }} id="field-server">
-        <h3 style={{ marginBottom: 12 }}>2. เลือกเซิร์ฟ *</h3>
+        <h3 style={{ marginBottom: 12 }}>1. เลือกเซิร์ฟ *</h3>
         <div style={{ display: "flex", gap: 8 }}>
           {["GB", "JP"].map((s) => (
             <button key={s}
-              onClick={() => {
-                setServer(s);
-                setErrors({ ...errors, server: null });
-              }}
-              style={toggleStyle(server === s, false)}
-            >{s}</button>
+              onClick={() => { setServer(s); setSelectedPrice(null); setPlatform(""); setErrors({ ...errors, server: null }); }}
+              style={toggleStyle(server === s, false)}>{s}</button>
           ))}
         </div>
         {errors.server && <div style={errorTextStyle}>{errors.server}</div>}
+      </div>
+
+      {/* 2. เลือกราคา */}
+      <div style={{ marginBottom: 24 }} id="field-price">
+        <h3 style={{ marginBottom: 12 }}>2. เลือกราคาไอดี *</h3>
+        {!server ? (
+          <div style={{ padding: "12px 14px", background: "rgba(255,204,0,0.1)", border: "1px solid rgba(255,204,0,0.4)", borderRadius: 10, fontSize: 14, color: "#ffe6a1" }}>
+            👆 กรุณาเลือกเซิร์ฟก่อน เพื่อดูราคาที่มีครับ
+          </div>
+        ) : priceList.length === 0 ? (
+          <div style={{ padding: "12px 14px", background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.5)", borderRadius: 10, fontSize: 14, color: "#ff6b6b" }}>
+            ❌ ไม่มีไอดีในเซิร์ฟนี้
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 8 }}>
+            {priceList.map((row) => {
+              const isSelected = selectedPrice === row.price;
+              const isOut = row.platform === "หมด";
+              return (
+                <button key={row.price}
+                  onClick={() => {
+                    if (isOut) return;
+                    setSelectedPrice(row.price);
+                    setPlatform("");
+                    setErrors({ ...errors, price: null, platform: null });
+                  }}
+                  disabled={isOut}
+                  style={priceButtonStyle(isSelected, row.platform)}>
+                  {row.price.toLocaleString()}฿
+                  <div style={{ fontSize: 11, fontWeight: "normal", marginTop: 2, opacity: 0.85 }}>
+                    💎 {typeof row.diamond === "number" ? row.diamond.toLocaleString() : row.diamond}
+                  </div>
+                  {row.platform === "iOS" && (
+                    <div style={{ fontSize: 10, color: isSelected ? "#000" : "#ff6b6b", marginTop: 2 }}>iOS เท่านั้น</div>
+                  )}
+                  {row.platform === "Android" && (
+                    <div style={{ fontSize: 10, color: isSelected ? "#000" : "#ff6b6b", marginTop: 2 }}>Android เท่านั้น</div>
+                  )}
+                  {isOut && (
+                    <div style={{ fontSize: 10, color: "#ff6b6b", marginTop: 2 }}>❌ สินค้าหมด</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {errors.price && <div style={errorTextStyle}>{errors.price}</div>}
       </div>
 
       {/* 3. เลือกระบบ */}
       <div style={{ marginBottom: 24 }} id="field-platform">
         <h3 style={{ marginBottom: 12 }}>3. เลือกระบบ *</h3>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button
-            disabled={androidDisabled}
-            onClick={() => {
-              if (androidDisabled) return;
-              setPlatform("Android");
-              setErrors({ ...errors, platform: null });
-            }}
-            style={toggleStyle(platform === "Android", androidDisabled)}
-          >Android</button>
-          <button
-            disabled={iosDisabled}
-            onClick={() => {
-              if (iosDisabled) return;
-              setPlatform("iOS");
-              setErrors({ ...errors, platform: null });
-            }}
-            style={toggleStyle(platform === "iOS", iosDisabled)}
-          >iOS</button>
+          <button disabled={androidDisabled}
+            onClick={() => { if (androidDisabled) return; setPlatform("Android"); setErrors({ ...errors, platform: null }); }}
+            style={toggleStyle(platform === "Android", androidDisabled)}>Android</button>
+          <button disabled={iosDisabled}
+            onClick={() => { if (iosDisabled) return; setPlatform("iOS"); setErrors({ ...errors, platform: null }); }}
+            style={toggleStyle(platform === "iOS", iosDisabled)}>iOS</button>
         </div>
 
-        {/* ✅ แจ้งเตือนใต้ปุ่ม */}
         {currentPlatform === "iOS" && (
-          <div style={{
-            marginTop: 8, padding: "8px 12px",
-            background: "rgba(230,57,70,0.15)",
-            border: "1px solid rgba(230,57,70,0.5)",
-            borderRadius: 8, fontSize: 13, color: "#ff6b6b",
-          }}>⚠️ ไอดีนี้มีแค่ iOS เท่านั้น (Android หมด)</div>
+          <div style={{ marginTop: 8, padding: "8px 12px", background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.5)", borderRadius: 8, fontSize: 13, color: "#ff6b6b" }}>
+            ⚠️ ไอดีนี้มีแค่ iOS เท่านั้น (Android หมด)
+          </div>
         )}
         {currentPlatform === "Android" && (
-          <div style={{
-            marginTop: 8, padding: "8px 12px",
-            background: "rgba(230,57,70,0.15)",
-            border: "1px solid rgba(230,57,70,0.5)",
-            borderRadius: 8, fontSize: 13, color: "#ff6b6b",
-          }}>⚠️ ไอดีนี้มีแค่ Android เท่านั้น (iOS หมด)</div>
+          <div style={{ marginTop: 8, padding: "8px 12px", background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.5)", borderRadius: 8, fontSize: 13, color: "#ff6b6b" }}>
+            ⚠️ ไอดีนี้มีแค่ Android เท่านั้น (iOS หมด)
+          </div>
         )}
         {currentPlatform === "หมด" && (
-          <div style={{
-            marginTop: 8, padding: "8px 12px",
-            background: "rgba(230,57,70,0.15)",
-            border: "1px solid rgba(230,57,70,0.5)",
-            borderRadius: 8, fontSize: 13, color: "#ff6b6b",
-          }}>❌ สินค้าหมดทั้ง 2 ระบบ</div>
+          <div style={{ marginTop: 8, padding: "8px 12px", background: "rgba(230,57,70,0.15)", border: "1px solid rgba(230,57,70,0.5)", borderRadius: 8, fontSize: 13, color: "#ff6b6b" }}>
+            ❌ สินค้าหมดทั้ง 2 ระบบ
+          </div>
         )}
 
         {errors.platform && <div style={errorTextStyle}>{errors.platform}</div>}
@@ -369,56 +315,40 @@ useEffect(() => {
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ marginBottom: 12 }}>4. ฟังก์ชันเพิ่ม (ไม่บังคับ)</h3>
         {options.addons.map((a) => (
-          <OptionItem
-            key={a.id}
-            checked={!!addons[a.id]}
+          <OptionItem key={a.id} checked={!!addons[a.id]}
             onChange={(e) => setAddons({ ...addons, [a.id]: e.target.checked })}
-            label={a.label} price={a.price}
-            salePrice={a.salePrice} sale={a.sale}
-          />
+            label={a.label} price={a.price} salePrice={a.salePrice} sale={a.sale} />
         ))}
       </div>
 
       {/* 5. ข้อมูลผูกไอดี */}
       <div style={{ marginBottom: 24 }}>
         <h3 style={{ marginBottom: 12 }}>5. ข้อมูลผูกไอดี *</h3>
-        <div style={{
-          padding: "12px 14px", marginBottom: 12,
-          background: "rgba(255,204,0,0.12)",
-          border: "1px solid rgba(255,204,0,0.4)",
-          borderRadius: 10, fontSize: 13, lineHeight: 1.7, color: "#ffe6a1",
-        }}>
+        <div style={{ padding: "12px 14px", marginBottom: 12, background: "rgba(255,204,0,0.12)", border: "1px solid rgba(255,204,0,0.4)", borderRadius: 10, fontSize: 13, lineHeight: 1.7, color: "#ffe6a1" }}>
           ⚠️ <strong>คำแนะนำสำคัญ:</strong><br />
           กรุณาใช้อีเมล <strong>สมัครใหม่</strong> หรืออีเมลที่ <strong>ไม่มีไอดีเกมอื่นผูกอยู่</strong><br />
           เพราะไอดีนี้จะถูกผูกกับอีเมลนั้นทันที
         </div>
 
         <div id="field-email">
-          <input type="email"
-            placeholder="อีเมล (สมัครใหม่ / ยังไม่ผูกไอดีเกม)"
+          <input type="email" placeholder="อีเมล (สมัครใหม่ / ยังไม่ผูกไอดีเกม)"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setErrors({ ...errors, email: null }); }}
-            style={inputStyle(!!errors.email)}
-          />
+            style={inputStyle(!!errors.email)} />
           {errors.email && <div style={errorTextStyle}>{errors.email}</div>}
         </div>
 
         <div id="field-password">
-          <input type="text"
-            placeholder="รหัสผ่าน (สำหรับผูกไอดี)"
+          <input type="text" placeholder="รหัสผ่าน (สำหรับผูกไอดี)"
             value={password}
             onChange={(e) => { setPassword(e.target.value); setErrors({ ...errors, password: null }); }}
-            style={inputStyle(!!errors.password)}
-          />
+            style={inputStyle(!!errors.password)} />
           {errors.password && <div style={errorTextStyle}>{errors.password}</div>}
         </div>
       </div>
 
-      {/* สรุปราคา */}
-      <div style={{
-        padding: 16, background: "rgba(0,0,0,0.4)",
-        borderRadius: 12, marginBottom: 20,
-      }}>
+      {/* สรุป */}
+      <div style={{ padding: 16, background: "rgba(0,0,0,0.4)", borderRadius: 12, marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span>เซิร์ฟ</span><span>{server || "-"}</span>
         </div>
@@ -431,8 +361,7 @@ useEffect(() => {
         {options.addons.map((a) =>
           addons[a.id] ? (
             <div key={a.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span>{a.label}</span>
-              <span>+{getAddonPrice(a).toLocaleString()} ฿</span>
+              <span>{a.label}</span><span>+{getAddonPrice(a).toLocaleString()} ฿</span>
             </div>
           ) : null
         )}
