@@ -28,22 +28,48 @@ export default function Order() {
   }, []);
 
   useEffect(() => {
-    fetch("/data/idshop-data.json")
-      .then((r) => r.json())
-      .then((data) => {
-        setAllAccounts(data);
-        const map = new Map();
-        data.forEach((item) => {
-          if (!map.has(item.price)) {
-            map.set(item.price, item);
-          }
-        });
-        const list = Array.from(map.values())
-          .map((item) => ({ price: item.price, diamond: item.diamond, platform: item.platform }))
-          .sort((a, b) => a.price - b.price);
-        setPriceList(list);
-      });
-  }, []);
+  fetch("/data/idshop-data.json")
+    .then((r) => r.json())
+    .then((data) => {
+      setAllAccounts(data);
+    });
+}, []);
+
+// ✅ กรอง priceList ตาม server + platform
+useEffect(() => {
+  if (allAccounts.length === 0) return;
+
+  let filtered = allAccounts;
+
+  // กรองตาม server
+  if (server) {
+    filtered = filtered.filter((a) => a.server === server);
+  }
+
+  // สร้าง priceList
+  const map = new Map();
+  filtered.forEach((item) => {
+    if (!map.has(item.price)) {
+      map.set(item.price, item);
+    }
+  });
+  const list = Array.from(map.values())
+    .map((item) => ({
+      price: item.price,
+      diamond: item.diamond,
+      platform: item.platform,
+      server: item.server,
+    }))
+    .sort((a, b) => a.price - b.price);
+
+  setPriceList(list);
+
+  // ✅ ถ้าราคาที่เลือกอยู่ไม่มีในลิสต์ใหม่ → reset
+  if (selectedPrice && !list.find((p) => p.price === selectedPrice)) {
+    setSelectedPrice(null);
+    setPlatform("");
+  }
+}, [allAccounts, server, selectedPrice]);
 
   useEffect(() => {
     if (priceFromQuery) setSelectedPrice(Number(priceFromQuery));
