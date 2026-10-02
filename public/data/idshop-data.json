@@ -106,7 +106,7 @@
   },
   {
     "diamond": 19000,
-    "price": 1950,
+    "price": 1900,
     "platform": "iOS",
     "server": "GB",
     "link": "https://www.facebook.com/share/p/1AwAkC7JFC/"
@@ -142,6 +142,13 @@
   {
     "diamond": 24000,
     "price": 2800,
+    "platform": "Android",
+    "server": "GB",
+    "link": "https://www.facebook.com/share/p/1Nap6Wjmwm/"
+  },
+  {
+    "diamond": 25000,
+    "price": 3000,
     "platform": "Android",
     "server": "GB",
     "link": "https://www.facebook.com/share/p/1Nap6Wjmwm/"
