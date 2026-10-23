@@ -117,8 +117,10 @@ export default function Order() {
       if (addons[a.id]) lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
     });
     lines.push("");
-    lines.push(`📧 อีเมล: ${email}`);
-    lines.push(`🔑 พาส: ${password}`);
+    lines.push(`📧 อีเมล:`);
+lines.push(`${email}`);
+lines.push(`🔑 พาส:`);
+lines.push(`${password}`);
     lines.push("");
     lines.push(`✅ รวมทั้งหมด: ${total.toLocaleString()} บาท`);
     lines.push("");
