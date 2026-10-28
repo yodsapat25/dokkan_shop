@@ -1,5 +1,80 @@
 import React, { useEffect, useRef, useState } from "react";
 
+// ✅ Component สำหรับแสดงการ์ดไอดีพิเศษ (ดึงจาก special.json)
+function SpecialCards() {
+  const [specials, setSpecials] = useState([]);
+
+  useEffect(() => {
+    fetch("/data/special.json")
+      .then((res) => res.json())
+      .then((data) => {
+        // เช็คว่าเป็น Array ไหม ถ้าเป็น Object เดี่ยวให้ห่อเป็น Array
+        if (Array.isArray(data)) {
+          setSpecials(data);
+        } else if (data) {
+          setSpecials([data]);
+        }
+      })
+      .catch((err) => console.error("โหลด special ล้มเหลว:", err));
+  }, []);
+
+  if (specials.length === 0) return null;
+
+  return (
+    <>
+      {specials.map((item) => {
+        // หาเพชรต่ำสุด-สูงสุด เพื่อโชว์ในการ์ด
+        const minDiamond = item.prices && item.prices.length > 0 ? item.prices[0].min : 0;
+        const maxDiamond = item.prices && item.prices.length > 0 ? item.prices[item.prices.length - 1].max : 0;
+        const minPrice = item.prices && item.prices.length > 0 ? item.prices[0].price : 0;
+        const maxPrice = item.prices && item.prices.length > 0 ? item.prices[item.prices.length - 1].price : 0;
+
+        return (
+          <div key={item.id} style={{
+            width: 200,
+            background: "linear-gradient(135deg, #2a1a00, #4d3000)",
+            border: "2px solid #ffcc00", borderRadius: 12, padding: 12,
+            boxShadow: "0 0 30px rgba(255,204,0,0.4)",
+            display: "flex", flexDirection: "column", alignItems: "center", color: "#fff",
+          }}>
+            <div style={{ background: "#ffcc00", color: "#000", fontWeight: "bold", fontSize: 11, padding: "3px 10px", borderRadius: 20, marginBottom: 8 }}>
+              {item.badge || "⭐ ไอดีพิเศษ"}
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, textAlign: "center", color: "#ffcc00" }}>
+              {item.title}
+            </div>
+            <div style={{ fontSize: 12, marginBottom: 10, textAlign: "center", opacity: 0.9 }}>
+              {item.subtitle}
+            </div>
+
+            <img src={item.coverImage} alt={item.title}
+              style={{ width: "100%", borderRadius: 8, marginBottom: 10, border: "1px solid rgba(255,204,0,0.3)" }}
+              onError={(e) => { e.target.style.display = "none"; }} />
+
+            <div style={{ fontSize: 12, marginBottom: 4 }}>💎 {minDiamond.toLocaleString()} - {maxDiamond.toLocaleString()}+ เพชร</div>
+            <div style={{ fontSize: 12, marginBottom: 4 }}>💰 {minPrice.toLocaleString()} - {maxPrice.toLocaleString()}฿</div>
+            <div style={{ fontSize: 12, marginBottom: 4 }}>📱 ระบบ: Android/iOS</div>
+            <div style={{ fontSize: 12, marginBottom: 10 }}>🌐 เซิร์ฟ: {item.server}</div>
+
+            <button onClick={() => { window.location.href = `/special?id=${item.id}`; }}
+              style={{ width: "100%", padding: "6px", background: "linear-gradient(90deg, #ffcc00, #ff9900)", color: "#000", fontWeight: "bold", borderRadius: 6, border: "none", cursor: "pointer", marginBottom: 6, fontSize: 13 }}>
+              🛒 ดูราคา / สั่งซื้อ
+            </button>
+
+            {item.link && (
+              <a href={item.link} target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
+                <button style={{ width: "100%", padding: "6px", background: "#1877f2", color: "#fff", fontWeight: "bold", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12 }}>
+                  🔗 ดูตัวอย่าง Facebook
+                </button>
+              </a>
+            )}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 export default function IdShop() {
   const videoRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -108,35 +183,9 @@ export default function IdShop() {
         </div>
       </div>
 
-      {/* ⭐ ไอดีพิเศษ */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
-        <div style={{
-          width: 200,
-          background: "linear-gradient(135deg, #2a1a00, #4d3000)",
-          border: "2px solid #ffcc00", borderRadius: 12, padding: 12,
-          boxShadow: "0 0 30px rgba(255,204,0,0.4)",
-          display: "flex", flexDirection: "column", alignItems: "center", color: "#fff",
-        }}>
-          <div style={{ background: "#ffcc00", color: "#000", fontWeight: "bold", fontSize: 11, padding: "3px 10px", borderRadius: 20, marginBottom: 8 }}>⭐ ไอดีพิเศษ</div>
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, textAlign: "center", color: "#ffcc00" }}>ไอดีรอพาส 3</div>
-          <div style={{ fontSize: 12, marginBottom: 10, textAlign: "center", opacity: 0.9 }}>ตู้WW เวอวาย (GDC)</div>
-
-          <img src="/images/special/rp3-cover.jpg" alt="ไอดีรอพาส 3"
-            style={{ width: "100%", borderRadius: 8, marginBottom: 10, border: "1px solid rgba(255,204,0,0.3)" }}
-            onError={(e) => { e.target.style.display = "none"; }} />
-
-          <div style={{ fontSize: 12, marginBottom: 4 }}>💎 1,500 - 9,000+ เพชร</div>
-          <div style={{ fontSize: 12, marginBottom: 4 }}>💰 500 - 1,350฿</div>
-          <div style={{ fontSize: 12, marginBottom: 4 }}>📱 ระบบ: Android/iOS</div>
-          <div style={{ fontSize: 12, marginBottom: 10 }}>🌐 เซิร์ฟ: GB</div>
-
-          <button onClick={() => { window.location.href = "/special"; }}
-            style={{ width: "100%", padding: "6px", background: "linear-gradient(90deg, #ffcc00, #ff9900)", color: "#000", fontWeight: "bold", borderRadius: 6, border: "none", cursor: "pointer", marginBottom: 6, fontSize: 13 }}>🛒 ดูราคา / สั่งซื้อ</button>
-
-          <a href="https://www.facebook.com/share/p/19QPJMb8RC/" target="_blank" rel="noopener noreferrer" style={{ width: "100%" }}>
-            <button style={{ width: "100%", padding: "6px", background: "#1877f2", color: "#fff", fontWeight: "bold", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12 }}>🔗 ดูตัวอย่าง Facebook</button>
-          </a>
-        </div>
+      {/* ⭐ ไอดีพิเศษ (ดึงจาก SpecialCards Component) */}
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 20, marginBottom: 28 }}>
+        <SpecialCards />
       </div>
 
       <div style={{ marginBottom: 24 }}>

@@ -4,9 +4,11 @@ import OptionItem from "../components/OptionItem";
 
 export default function Special() {
   const router = useRouter();
+  const { id } = router.query; // ดึง ID จาก URL (เช่น ?id=rp3)
 
   const [options, setOptions] = useState(null);
-  const [special, setSpecial] = useState(null);
+  const [specials, setSpecials] = useState([]); // เก็บข้อมูลไอดีพิเศษทั้งหมด
+  const [special, setSpecial] = useState(null); // เก็บข้อมูลไอดีที่ถูกเลือก
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [server, setServer] = useState("");
   const [platform, setPlatform] = useState("");
@@ -15,13 +17,29 @@ export default function Special() {
   const [addons, setAddons] = useState({});
   const [errors, setErrors] = useState({});
 
-  // ✅ useEffect ทั้งหมดอยู่บนสุด — ก่อน return
+  // 1. โหลดข้อมูล options และ specials
   useEffect(() => {
     fetch("/data/options.json").then((r) => r.json()).then(setOptions);
-    fetch("/data/special.json").then((r) => r.json()).then(setSpecial);
+    fetch("/data/special.json")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setSpecials(data);
+        else if (data) setSpecials([data]);
+      });
   }, []);
 
-  // ✅ คำนวณ available platforms ล่วงหน้า (ก่อน return)
+  // 2. ค้นหาไอดีที่ตรงกับ ID ใน URL
+  useEffect(() => {
+    if (specials.length > 0 && id) {
+      const found = specials.find((s) => s.id === id);
+      if (found) {
+        setSpecial(found);
+        setServer(found.server || "");
+      }
+    }
+  }, [specials, id]);
+
+  // 3. คำนวณข้อมูลที่ต้องใช้ (ต้องอยู่ก่อน return)
   const selectedRange = special?.prices?.find((p) => p.price === selectedPrice);
 
   const getAvailablePlatforms = (note) => {
@@ -39,15 +57,25 @@ export default function Special() {
     ? getAvailablePlatforms(selectedRange.note)
     : ["Android", "iOS"];
 
-  // ✅ useEffect อยู่ก่อน return — ปลอดภัย
+  // 4. รีเซ็ตระบบถ้าไม่ตรงกับช่วงเพชรที่เลือก
   useEffect(() => {
     if (platform && !availablePlatforms.includes(platform)) {
       setPlatform("");
     }
   }, [selectedPrice, platform, availablePlatforms.join(",")]);
 
-  if (!options || !special) {
-    return <div style={{ padding: 20, color: "#fff" }}>กำลังโหลด...</div>;
+  // 5. ถ้ายังโหลดไม่เสร็จ หรือไม่พบไอดี
+  if (!options || specials.length === 0) {
+    return <div style={{ padding: 20, color: "#fff" }}>กำลังโหลดข้อมูล...</div>;
+  }
+  
+  if (!special) {
+    return (
+      <div style={{ padding: 20, color: "#fff", textAlign: "center", marginTop: 50 }}>
+        <h2>❌ ไม่พบไอดีพิเศษนี้</h2>
+        <button onClick={() => router.push("/")} style={{ marginTop: 20, padding: "10px 20px" }}>กลับหน้าร้าน</button>
+      </div>
+    );
   }
 
   const getAddonPrice = (a) => (a.sale && a.salePrice ? a.salePrice : a.price);
@@ -85,9 +113,9 @@ export default function Special() {
     });
     lines.push("");
     lines.push(`📧 อีเมล:`);
-lines.push(`${email}`);
-lines.push(`🔑 พาส:`);
-lines.push(`${password}`);
+    lines.push(`${email}`);
+    lines.push(`🔑 พาส:`);
+    lines.push(`${password}`);
     lines.push("");
     lines.push(`✅ รวมทั้งหมด: ${total.toLocaleString()} บาท`);
     lines.push("");
@@ -189,18 +217,20 @@ lines.push(`${password}`);
       </div>
 
       {/* Highlights */}
-      <div style={{ padding: 16, background: "rgba(255,255,255,0.08)", borderRadius: 12, marginBottom: 20, lineHeight: 1.9 }}>
-        <h3 style={{ marginBottom: 10 }}>📋 รายละเอียดไอดี</h3>
-        <ul style={{ paddingLeft: 20, margin: 0 }}>
-          {special.highlights.map((h, i) => (<li key={i}>{h}</li>))}
-        </ul>
-        {special.progress && (
-          <div style={{ marginTop: 12, fontSize: 14, color: "#ffcc00" }}>
-            📊 ด่าน: {special.progress.stages}<br />
-            💎 เพชรเหลือ: {special.progress.diamondLeft}
-          </div>
-        )}
-      </div>
+      {special.highlights && special.highlights.length > 0 && (
+        <div style={{ padding: 16, background: "rgba(255,255,255,0.08)", borderRadius: 12, marginBottom: 20, lineHeight: 1.9 }}>
+          <h3 style={{ marginBottom: 10 }}>📋 รายละเอียดไอดี</h3>
+          <ul style={{ paddingLeft: 20, margin: 0 }}>
+            {special.highlights.map((h, i) => (<li key={i}>{h}</li>))}
+          </ul>
+          {special.progress && (
+            <div style={{ marginTop: 12, fontSize: 14, color: "#ffcc00" }}>
+              📊 ด่าน: {special.progress.stages}<br />
+              💎 เพชรเหลือ: {special.progress.diamondLeft}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 1. เลือกช่วงเพชร */}
       <div style={{ marginBottom: 24 }} id="field-price">
@@ -284,14 +314,14 @@ lines.push(`${password}`);
       </div>
 
       {/* 4. ฟังก์ชันเพิ่ม — ปิดการใช้งานสำหรับไอดีพิเศษ */}
-<div style={{ marginBottom: 24, opacity: 0.4, pointerEvents: "none" }}>
-  <h3 style={{ marginBottom: 12 }}>4. ฟังก์ชันเพิ่ม (ไม่บังคับ)</h3>
-  {options.addons.map((a) => (
-    <OptionItem key={a.id} checked={!!addons[a.id]}
-      onChange={() => {}}
-      label={a.label} price={a.price} salePrice={a.salePrice} sale={a.sale} />
-  ))}
-</div>
+      <div style={{ marginBottom: 24, opacity: 0.4, pointerEvents: "none" }}>
+        <h3 style={{ marginBottom: 12 }}>4. ฟังก์ชันเพิ่ม (ไม่บังคับ)</h3>
+        {options.addons.map((a) => (
+          <OptionItem key={a.id} checked={!!addons[a.id]}
+            onChange={() => {}}
+            label={a.label} price={a.price} salePrice={a.salePrice} sale={a.sale} />
+        ))}
+      </div>
 
       {/* 5. ข้อมูลผูกไอดี */}
       <div style={{ marginBottom: 24 }}>
