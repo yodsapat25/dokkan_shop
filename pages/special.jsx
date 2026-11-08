@@ -78,8 +78,12 @@ export default function Special() {
     );
   }
 
+  // รวม addons จาก options และ special เข้าด้วยกัน
+  const currentAddons = [...(options.addons || []), ...(special.addons || [])];
   const getAddonPrice = (a) => (a.sale && a.salePrice ? a.salePrice : a.price);
-  const addonTotal = options.addons.reduce(
+  
+  // คำนวณราคาจาก addons ที่มีทั้งหมด
+  const addonTotal = currentAddons.reduce(
     (sum, a) => (addons[a.id] ? sum + getAddonPrice(a) : sum),
     0
   );
@@ -108,7 +112,7 @@ export default function Special() {
     lines.push(`📱 ระบบ: ${platform}`);
     lines.push(`💎 เพชร: ${selectedRange.min.toLocaleString()}-${selectedRange.max.toLocaleString()}`);
     lines.push(`💰 ราคาไอดี: ${selectedPrice.toLocaleString()} บาท`);
-    options.addons.forEach((a) => {
+    currentAddons.forEach((a) => {
       if (addons[a.id]) lines.push(`➕ ${a.label}: +${getAddonPrice(a).toLocaleString()} บาท`);
     });
     lines.push("");
@@ -371,7 +375,7 @@ export default function Special() {
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span>ราคาไอดี</span><span>{(selectedPrice || 0).toLocaleString()} ฿</span>
         </div>
-        {options.addons.map((a) =>
+        {currentAddons.map((a) =>
           addons[a.id] ? (
             <div key={a.id} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
               <span>{a.label}</span><span>+{getAddonPrice(a).toLocaleString()} ฿</span>
